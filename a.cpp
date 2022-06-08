@@ -1,13 +1,16 @@
 #include<iostream>
+#include<vector>
+// #define DEBUG
 
 using namespace std;
 
 char *maze;
+char *buffer;
 int N;
 
 bool get(int x, int y, char* ptr){
-	char byte = maze[(x + N*y)/8];
-	char mask = 010000000 >> ((x + N*y)%8);
+	char byte = ptr[(x + N*y)/8];
+	char mask = 0b10000000 >> ((x + N*y)%8);
 	return byte & mask;
 }
 
@@ -18,13 +21,16 @@ bool get(int x, int y, char* ptr){
 bool offset(int x, int y, char* ptr, char direction){
 	switch(direction){
 		case 0:
-			return get(x, y-1);
+			return get(x, y-1, ptr);
 		case 1:
-			return get(x+1, y);
+			return get(x+1, y, ptr);
 		case 2:
-			return get(x, y+1);
+			return get(x, y+1, ptr);
+		case 3:
+			return get(x-1, y, ptr);
 		default:
-			return get(x-1, y);
+			exit(1);
+	}
 }
 
 void go(int &x, int &y, char direction){
@@ -36,7 +42,7 @@ void go(int &x, int &y, char direction){
 			x++;
 			return;
 		case 2:
-			y--;
+			y++;
 			return;
 		case 3:
 			x--;
@@ -47,20 +53,19 @@ void go(int &x, int &y, char direction){
 }
 
 void unset(int x, int y, char* ptr){
-	char mask = 010000000 >> ((x + N*y)%8);
-	mask ^= 011111111;
-	maze[(x + N*y)/8] &= mask;
+	char mask = 0b10000000 >> ((x + N*y)%8);
+	mask ^= 0b11111111;
+	ptr[(x + N*y)/8] &= mask;
 	return;
 }
 
 void set(int x, int y, char* ptr){
-	char mask = 010000000 >> ((x + N*y)%8);
-	maze[(x + N*y)/8] |= mask;
+	char mask = 0b10000000 >> ((x + N*y)%8);
+	ptr[(x + N*y)/8] |= mask;
 	return;
 }
 
 int solve(int x, int y){
-	char *buffer = new char[N*N/8 + 1];
 	int count = 0;
 
 	vector<char> walked_path;
@@ -79,7 +84,7 @@ int solve(int x, int y){
 		for(i = 0; i < 4; i++) {
 			if( i == 0 && y == 0 ||
 			    i == 1 && x == N-1 ||
-			    i == 2 && xy == N-1 ||
+			    i == 2 && y == N-1 ||
 			    i == 3 && x == 0)
 				continue;
 			if(!offset(x, y, buffer, i) && (here ^ offset(x, y, maze, i)))
@@ -89,29 +94,43 @@ int solve(int x, int y){
 			if(!walked_path.size())
 				break;
 			go(x, y, walked_path.back());
-			walked_path.pop();
+			walked_path.pop_back();
 			continue;
 		}
 		walked_path.push_back((i+2) % 4);
 		go(x, y, i);
 	}
+	delete buffer;
 	return count;
 }
 
 int main(){
 	int m;
 	cin >> N >> m;
-	maze = new char[N*N/8 + 1];
-	for(int i = 0; i < N; i++)
-		for(int j = 0; j < N; j++){
+	maze = new char[N*N/8 + 1] {0};
+	buffer = new char[N*N/8 + 1] {0};
+	for(char i = 0; i < N; i++){
+		for(char j = 0; j < N; j++){
 			char c;
-			cin >> c;
+			do{
+				cin >> c;
+			}while(c == '\n');
 			if(c == '1')
 				set(j, i, maze);
 		}
+	}
+#ifdef DEBUG
+	cout<<"Maze input finished, printing..."<<endl<<hex;
+	for(int i = 0; i < N; i++){
+		for(int j = 0; j < N; j++)
+			cout<<get(j, i, maze);
+		cout<<endl;
+	}
+#endif
 	for(int i = 0; i < m; i++){
 		int x, y;
 		cin >> x >> y;
-		cout << solve(x, y) << endl;
+		cout << solve(x-1, y-1) << endl;
 	}
+	delete maze;
 }
