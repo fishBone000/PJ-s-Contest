@@ -27,6 +27,25 @@ bool offset(int x, int y, char* ptr, char direction){
 			return get(x-1, y);
 }
 
+void go(int &x, int &y, char direction){
+	switch(direction){
+		case 0:
+			y--;
+			return;
+		case 1:
+			x++;
+			return;
+		case 2:
+			y--;
+			return;
+		case 3:
+			x--;
+			return;
+		default:
+			exit(1);
+	}
+}
+
 void unset(int x, int y, char* ptr){
 	char mask = 010000000 >> ((x + N*y)%8);
 	mask ^= 011111111;
@@ -45,16 +64,28 @@ int solve(int x, int y){
 
 	vector<char> walked_path;
 	// Each element in this vector shows the
-	// direction of previous step
+	// direction to the previous step
 
 	bool flag = true;
 	while(flag){
 		const bool here = get(x, y, maze);
 		set(x, y, buffer);
-		for(int i = 0; i < 4; i++)
+		char i;
+		for(i = 0; i < 4; i++) {
+			if( i == 0 && y == 0 ||
+			    i == 1 && x == N-1 ||
+			    i == 2 && xy == N-1 ||
+			    i == 3 && x == 0)
+				continue;
 			if(!offset(x, y, buffer, i) && (here ^ offset(x, y, maze, i)))
-				switch(i){
-					case 0:
+				break;
+		}
+		if(i == 4){
+			go(x, y, walked_path.pop());
+			continue;
+		}
+		walked_path.push((i+2) % 4);
+		go(x, y, i);
 	}
 }
 
