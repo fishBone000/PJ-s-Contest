@@ -61,15 +61,20 @@ void set(int x, int y, char* ptr){
 
 int solve(int x, int y){
 	char *buffer = new char[N*N/8 + 1];
+	int count = 0;
 
 	vector<char> walked_path;
 	// Each element in this vector shows the
 	// direction to the previous step
 
-	bool flag = true;
-	while(flag){
+	while(true){
 		const bool here = get(x, y, maze);
-		set(x, y, buffer);
+
+		if(!get(x, y, buffer)){
+			count++;
+			set(x, y, buffer);
+		}
+
 		char i;
 		for(i = 0; i < 4; i++) {
 			if( i == 0 && y == 0 ||
@@ -81,12 +86,16 @@ int solve(int x, int y){
 				break;
 		}
 		if(i == 4){
-			go(x, y, walked_path.pop());
+			if(!walked_path.size())
+				break;
+			go(x, y, walked_path.back());
+			walked_path.pop();
 			continue;
 		}
-		walked_path.push((i+2) % 4);
+		walked_path.push_back((i+2) % 4);
 		go(x, y, i);
 	}
+	return count;
 }
 
 int main(){
@@ -103,6 +112,6 @@ int main(){
 	for(int i = 0; i < m; i++){
 		int x, y;
 		cin >> x >> y;
-		cout << solve(x, y)<<endl;
+		cout << solve(x, y) << endl;
 	}
 }
