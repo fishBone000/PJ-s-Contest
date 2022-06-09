@@ -1,6 +1,5 @@
 #include<iostream>
 #include<vector>
-// #define DEBUG
 
 using namespace std;
 
@@ -100,7 +99,6 @@ int solve(int x, int y){
 		walked_path.push_back((i+2) % 4);
 		go(x, y, i);
 	}
-	delete buffer;
 	return count;
 }
 
@@ -108,7 +106,6 @@ int main(){
 	int m;
 	cin >> N >> m;
 	maze = new char[N*N/8 + 1] {0};
-	buffer = new char[N*N/8 + 1] {0};
 	for(char i = 0; i < N; i++){
 		for(char j = 0; j < N; j++){
 			char c;
@@ -119,18 +116,12 @@ int main(){
 				set(j, i, maze);
 		}
 	}
-#ifdef DEBUG
-	cout<<"Maze input finished, printing..."<<endl<<hex;
-	for(int i = 0; i < N; i++){
-		for(int j = 0; j < N; j++)
-			cout<<get(j, i, maze);
-		cout<<endl;
-	}
-#endif
 	for(int i = 0; i < m; i++){
 		int x, y;
 		cin >> x >> y;
+		buffer = new char[N*N/8 + 1] {0};
 		cout << solve(x-1, y-1) << endl;
+		delete buffer;
 	}
 	delete maze;
 }
